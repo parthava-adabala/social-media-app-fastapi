@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, URL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 # import psycopg2
@@ -6,7 +6,14 @@ from sqlalchemy.orm import sessionmaker
 import time
 from .config import settings
 
-SQLALCHEMY_DATABASE_URL = f'postgresql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}'
+SQLALCHEMY_DATABASE_URL = URL.create(
+    drivername="postgresql+psycopg2",
+    username=settings.database_username,
+    password=settings.database_password,  
+    host=settings.database_hostname,
+    database=settings.database_name,
+)
+#SQLALCHEMY_DATABASE_URL = f'postgresql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}'
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
