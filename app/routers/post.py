@@ -13,7 +13,8 @@ async def posts(db: Session = Depends(get_db), current_user: int = Depends(oauth
     # cursor.execute("""SELECT * FROM posts""")
     # posts = cursor.fetchall()
     #posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    posts_query = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    posts = [{"post": post, "votes": votes} for post, votes in posts_query]
     return posts
 
 
@@ -34,10 +35,11 @@ def get_post(id: int, response: Response, db: Session = Depends(get_db), current
     # cursor.execute("""SELECT * FROM posts where id=%s """,(str(id),))
     # post = cursor.fetchone()
     # post = db.query(models.Post).filter(models.Post.id==id).first()
-    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id==id).first()
-    if not post:
+    post_query = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id==id).first()
+    if not post_query:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"post with id {id} was not found")
-    return post
+    post, votes = post_query
+    return {"post": post, "votes": votes}
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
