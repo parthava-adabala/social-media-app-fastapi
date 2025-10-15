@@ -1,0 +1,23 @@
+name: Build and deploy code
+
+on: ["push", "pull_request"] # on push or pull request to any branch
+
+# on push or pull request to specific branches
+# on:
+#   push:
+#     branches:
+#       - "main"
+
+#   pull_request:
+#     branches:
+#       - "test_branch"
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: pull source code
+        uses: actions/checkout@v2
+      - name: hello
+        run : echo "hello world"
+

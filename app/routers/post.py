@@ -54,8 +54,8 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depe
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@router.put("/{id}")
-def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db), response_model=schemas.Post, current_user: int = Depends(oauth2.get_current_user)):
+@router.put("/{id}", response_model=schemas.Post)
+def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""UPDATE posts SET title=%s, content=%s, published=%s WHERE id=%s RETURNING *""",(post.title, post.content, post.published, str(id),))
     # updated_post = cursor.fetchone()
     # conn.commit()
@@ -67,4 +67,5 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to perform the requested action")
     post_query.update(updated_post.model_dump())
     db.commit()
-    return post_query.first()
+    db.refresh(post)
+    return post
